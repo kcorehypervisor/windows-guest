@@ -1,0 +1,8 @@
+build/
+result
+.direnv/
+*.raw
+*.iso
+*.wim
+*.esd
+admin-password.txt

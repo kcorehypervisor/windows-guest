@@ -1,0 +1,15 @@
+name: recipe
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install checkers
+        run: sudo apt-get update && sudo apt-get install -y shellcheck libxml2-utils gettext-base
+      - name: Check recipe
+        run: ./scripts/check.sh
