@@ -13,7 +13,7 @@ Cloud Hypervisor's Windows support needs Hyper-V enlightenments (`kvm_hyperv=on`
 
 This recipe pins [virtio-win 0.1.240](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.240-1/) and writes a raw disk. Fedora redistributes that ISO. The script checks its SHA256 before use.
 
-Windows 11 is out of scope. It wants a TPM, and Cloud Hypervisor's TPM path is not a reliable Windows guest target. Server 2022 does not need a TPM to install.
+Windows 11 uses this same recipe once the image exists. Setup refuses to start without a TPM 2.0 and Secure Boot, and Cloud Hypervisor on kcore presents neither. A lab image skips those two checks in the answer file, then boots with the same `kvm_hyperv=on` command line as Server. That is not a Microsoft-supported configuration. The virtio drivers for that image come from the `w11` directory on the pinned virtio ISO, not `2k22`. Set `WINDOWS_IMAGE` to an edition name printed by `--list-images`. The scripts in this tree still install the `2k22` drivers, which is the Server 2022 path.
 
 ## Prerequisites
 
@@ -57,7 +57,7 @@ Log in as `Administrator` with the password in `build/admin-password.txt`.
 
 ## Use the disk with kcore
 
-kcore can store the disk, but it does not yet boot Windows correctly. Current kcore guests are Linux: the VM unit always attaches a cloud-init seed and its CPU line does not pass `kvm_hyperv=on`. Until a Windows guest type exists, use `boot-ch.sh` as the boot test.
+kcore boots the disk with the same VM path as a Linux guest. The node image starts Cloud Hypervisor with `kvm_hyperv=on` for every VM. A cloud-init seed is still attached; Windows ignores it. Log in as `Administrator` from this image, not as the cloud-init user. `boot-ch.sh` is the local check before upload.
 
 When you only need the file on a node:
 
