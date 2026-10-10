@@ -14,7 +14,7 @@
       <DriverPaths>
         <PathAndCredentials wcm:action="add" wcm:keyValue="1">
           <!-- Second CD is the seed ISO. QEMU attaches the Windows ISO first. -->
-          <Path>E:\viostor\2k22\amd64</Path>
+          <Path>E:\viostor\${VIRTIO_OS}\amd64</Path>
         </PathAndCredentials>
       </DriverPaths>
     </component>
@@ -79,6 +79,7 @@
       </ImageInstall>
       <UserData>
         <AcceptEula>true</AcceptEula>
+        ${PRODUCT_KEY_XML}
         <FullName>kcore</FullName>
         <Organization>kcore</Organization>
       </UserData>
@@ -91,7 +92,7 @@
         <RunSynchronousCommand wcm:action="add">
           <Order>2</Order>
           <Description>Inject virtio drivers into the applied image</Description>
-          <Path>cmd.exe /c "for %i in (D E F G H I) do @if exist %i:\kcore-windows-seed.txt (dism /image:C:\ /add-driver /driver:%i:\viostor\2k22\amd64 /recurse &amp; dism /image:C:\ /add-driver /driver:%i:\NetKVM\2k22\amd64 /recurse)"</Path>
+          <Path>cmd.exe /c "for %i in (D E F G H I) do @if exist %i:\kcore-windows-seed.txt (dism /image:C:\ /add-driver /driver:%i:\viostor\${VIRTIO_OS}\amd64 /recurse &amp; dism /image:C:\ /add-driver /driver:%i:\NetKVM\${VIRTIO_OS}\amd64 /recurse)"</Path>
         </RunSynchronousCommand>
       </RunSynchronous>
     </component>

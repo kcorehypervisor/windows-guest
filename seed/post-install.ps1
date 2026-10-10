@@ -24,7 +24,7 @@ function Enable-Sac {
 
 function Install-NetKvm {
     param([string]$Seed)
-    $inf = Join-Path $Seed 'NetKVM\2k22\amd64\netkvm.inf'
+    $inf = Join-Path $Seed 'NetKVM\${VIRTIO_OS}\amd64\netkvm.inf'
     if (-not (Test-Path $inf)) {
         Write-Output "NetKVM inf missing: $inf"
         return

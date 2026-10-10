@@ -17,7 +17,9 @@
           OVMF-cloud-hypervisor
           cloud-hypervisor
           xorriso
+          p7zip
           wimlib
+          python3
           curl
           gettext
           shellcheck

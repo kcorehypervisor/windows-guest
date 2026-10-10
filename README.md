@@ -1,6 +1,6 @@
 # Windows Server guest image for Cloud Hypervisor
 
-Unattended QEMU recipe that installs Windows Server 2022 onto a raw disk with virtio block and virtio-net drivers, Emergency Management Services (SAC), and OpenSSH Server. The resulting disk boots on [Cloud Hypervisor](https://github.com/cloud-hypervisor/cloud-hypervisor).
+Unattended QEMU recipe that installs Windows Server 2022 or Windows 10 onto a raw disk with virtio block and virtio-net drivers and OpenSSH Server. Server also enables the serial console (SAC). The resulting disk boots on [Cloud Hypervisor](https://github.com/cloud-hypervisor/cloud-hypervisor).
 
 This repository holds the recipe only. It does not contain a Windows ISO, a product key, or a built disk image. Publishing any of those would redistribute Microsoft Windows. Build the image on a machine you control, from installation media you are licensed to use, and keep the disk private.
 
@@ -13,7 +13,7 @@ Cloud Hypervisor's Windows support needs Hyper-V enlightenments (`kvm_hyperv=on`
 
 This recipe pins [virtio-win 0.1.240](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.240-1/) and writes a raw disk. Fedora redistributes that ISO. The script checks its SHA256 before use.
 
-Windows 11 uses this same recipe once the image exists. Setup refuses to start without a TPM 2.0 and Secure Boot, and Cloud Hypervisor on kcore presents neither. A lab image skips those two checks in the answer file, then boots with the same `kvm_hyperv=on` command line as Server. That is not a Microsoft-supported configuration. The virtio drivers for that image come from the `w11` directory on the pinned virtio ISO, not `2k22`. Set `WINDOWS_IMAGE` to an edition name printed by `--list-images`. The scripts in this tree still install the `2k22` drivers, which is the Server 2022 path.
+Windows 11 uses this same recipe once the image exists. Setup refuses to start without a TPM 2.0 and Secure Boot, and Cloud Hypervisor on kcore presents neither. A lab image skips those two checks in the answer file, then boots with the same `kvm_hyperv=on` command line as Server. That is not a Microsoft-supported configuration. Set `WINDOWS_IMAGE` to an edition name printed by `--list-images` and `VIRTIO_OS=w11`. The Server and Windows 10 builds already select `2k22` and `w10`.
 
 ## Prerequisites
 
@@ -24,13 +24,23 @@ Windows 11 uses this same recipe once the image exists. Setup refuses to start w
 
 ## Build
 
+Server 2022:
+
 ```bash
 nix develop -c ./build.sh --list-images
 # set WIN_ISO, then:
 nix develop -c ./build.sh
 ```
 
-`WIN_ISO` is the path to your ISO. The default edition is `Windows Server 2022 SERVERSTANDARD`. Override it with `WINDOWS_IMAGE` using a name printed by `--list-images`.
+Windows 10 uses the same installer and the `w10` virtio drivers:
+
+```bash
+nix develop -c ./build-win10.sh --list-images
+# set WIN_ISO to Windows 10 media, then:
+nix develop -c ./build-win10.sh
+```
+
+`WIN_ISO` is the path to your ISO. The Server default edition is `Windows Server 2022 SERVERSTANDARD`. The Windows 10 default is `Windows 10 Pro`, with Microsoft's public Pro setup key so the consumer ISO does not stop and ask for one. That key does not activate Windows. Override the edition with `WINDOWS_IMAGE` using a name printed by `--list-images`, and set `WINDOWS_PRODUCT_KEY` when that edition needs a different key.
 
 The build:
 
@@ -41,14 +51,15 @@ The build:
 
 Watch the installer on VNC at `127.0.0.1:5900` if it stops. A generated Administrator password is written to `build/admin-password.txt` (mode 0600). Set `WINDOWS_ADMIN_PASSWORD` to choose one (8–64 letters and digits).
 
-Useful overrides: `DISK_SIZE_GB` (default 40), `MEMORY_MB` (default 4096), `CPUS` (default 2), `WINDOWS_COMPUTER_NAME` (default `KCORE-WIN`), `FORCE=1` to replace an existing disk.
+Useful overrides: `DISK_SIZE_GB` (default 40), `MEMORY_MB` (default 4096), `CPUS` (default 2), `WINDOWS_COMPUTER_NAME` (default `KCORE-WIN` or `KCORE-WIN10`), `FORCE=1` to replace an existing disk.
 
-The disk is `build/windows-server-2022.raw`.
+The Server disk is `build/windows-server-2022.raw`. The Windows 10 disk is `build/windows-10.raw`. Windows 10 has no SAC prompt; after the build, SSH to the guest as `Administrator`.
 
 ## Boot on Cloud Hypervisor
 
 ```bash
 nix develop -c ./boot-ch.sh
+nix develop -c ./boot-win10.sh
 ```
 
 This is the test that matters. It starts Cloud Hypervisor with `kvm_hyperv=on`, the Cloud Hypervisor OVMF firmware, and the raw disk. The terminal is the serial port. After boot you should see a `SAC>` prompt. `cmd` then `ch -si 1` opens a command channel, as described in the [Cloud Hypervisor Windows guide](https://github.com/cloud-hypervisor/cloud-hypervisor/blob/main/docs/windows.md).

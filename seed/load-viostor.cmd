@@ -2,7 +2,7 @@
 setlocal
 rem WinPE helper. Called as: load-viostor.cmd E:
 rem Copies viostor onto the WinPE ramdisk and loads it so setup can see the virtio disk.
-set "SRC=%~1\viostor\2k22\amd64"
+set "SRC=%~1\viostor\${VIRTIO_OS}\amd64"
 if not exist "%SRC%\viostor.inf" (
   echo viostor not found at %SRC%
   exit /b 1
